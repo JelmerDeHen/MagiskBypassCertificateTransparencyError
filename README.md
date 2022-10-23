@@ -27,7 +27,7 @@ Chrome will use this method when the `chrome://flags` option `Enable command lin
 # Installation
 1. Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `Enabled`
 1. Install [Magisk](https://github.com/topjohnwu/Magisk/releases)
-2. Zip files `zip -r MagiskBypassCertificateTransparencyError.zip ./*`
+2. Zip files `zip -r MagiskBypassCertificateTransparencyError.zip ./*` && `adb push MagiskBypassCertificateTransparencyError.zip /storage/emulated/0/Download/`
 3. Install in Magisk
 4. Restart your device.
 5. Visit `chrome://version` and verify `--ignore-certificate-errors-spki-list` flag is present
