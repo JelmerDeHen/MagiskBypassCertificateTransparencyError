@@ -1,4 +1,4 @@
-# Magisk Disable Certificate Transparency
+# Magisk Bypass Certificate Transparency
 This module bypasses the Certificate Transparency (CT) certificate error for Android `user` build type roms in Chrome (com.android.chrome) by configuring it to use the `--ignore-certificate-errors-spki-list` flag. Chrome does not verify the correctness of the subjectPublicKeyInformation (SPKI) parameter so no `openssl` is needed. 
 
 Chrome version 99 introduced Certificate Transparency (CT) resulting in `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` certificate errors when mitming using custom CA from system bundle. This is problematic when using an intercepting proxy issuing self-signed certificates.
@@ -118,9 +118,9 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/base/android/java/src/org/
 ```
 
 To make this function return true one of the following must be true:
-| Via `ChromeFeatureList.sCommandLineOnNonRooted.isEnabled()` | Could be changed through hooking (but then we might as well hook `getDebugApp()` directly)
-| Set ro.build.type to "eng" or "userdebug" | Could be changed via [MagiskHidePropsConf](https://github.com/Magisk-Modules-Repo/MagiskHidePropsConf) but not via magisk `module.prop` because its ro and doing this globally is too invasive |
-| System property `adb_enabled=1` and `debug_app=com.android.chrome` | Can be changed as root `settings put global debug_app com.android.chrome` |
+- Via `ChromeFeatureList.sCommandLineOnNonRooted.isEnabled()`: Could be changed through hooking (but then we might as well hook `getDebugApp()` directly)
+- Set ro.build.type to "eng" or "userdebug": Could be changed via [MagiskHidePropsConf](https://github.com/Magisk-Modules-Repo/MagiskHidePropsConf) but not via magisk `module.prop` because its ro and doing this globally is too invasive
+- System property `adb_enabled=1` and `debug_app=com.android.chrome`: Can be changed as root `settings put global debug_app com.android.chrome`
 
 
 # Links
