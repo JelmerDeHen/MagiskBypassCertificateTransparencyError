@@ -1,8 +1,0 @@
-/data/local/chrome-command-line
-/data/local/android-webview-command-line
-/data/local/webview-command-line
-/data/local/content-shell-command-line
-/data/local/tmp/chrome-command-line
-/data/local/tmp/android-webview-command-line
-/data/local/tmp/webview-command-line
-/data/local/tmp/content-shell-command-line
