@@ -42,6 +42,7 @@ createFlagFile() {
 }
 
 # Duplicates the created flag file to /data
+# Seems like only /data/local/tmp/chrome-command-line is used
 copyFlagFileToData() {
   while read -r; do
     #rm -vf "${REPLY}"

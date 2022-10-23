@@ -41,6 +41,8 @@ bash der2spki.sh cacert.der
 bash der2spki.sh adb
 ```
 
+Once you have the SPKI fingerprint connect over adb and run the following as root:
+
 ```sh
 settings put global adb_enabled 1
 settings put global debug_app com.android.chrome
@@ -61,9 +63,10 @@ done <<EOF
 /data/local/tmp/webview-command-line
 /data/local/tmp/content-shell-command-line
 EOF
-```
 
-Then `killall com.android.chrome` and it should work.
+# Restart Chrome for changes to take effect
+killall com.android.chrome
+```
 
 ### Changelog
 
