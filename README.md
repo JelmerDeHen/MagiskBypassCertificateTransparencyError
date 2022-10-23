@@ -117,9 +117,10 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/base/android/java/src/org/
     }
 ```
 
-To make this function return true one of the following must be true:
-- Via `ChromeFeatureList.sCommandLineOnNonRooted.isEnabled()`: Could be changed through hooking (but then we might as well hook `getDebugApp()` directly)
-- Set ro.build.type to "eng" or "userdebug": Could be changed via [MagiskHidePropsConf](https://github.com/Magisk-Modules-Repo/MagiskHidePropsConf) but not via magisk `module.prop` because its ro and doing this globally is too invasive
+The first check `ChromeFeatureList.sCommandLineOnNonRooted.isEnabled()` verifies if the flag was configured in `chrome://flags`.
+
+To make the function `shouldUseDebugCommandLine()` return true one of the following prerequisites must be true:
+- `ro.build.type` is `eng` or `userdebug`
 - System property `adb_enabled=1` and `debug_app=com.android.chrome`: Can be changed as root `settings put global debug_app com.android.chrome`
 
 
