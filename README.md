@@ -36,7 +36,7 @@ Chrome will use this method when the `chrome://flags` option `Enable command lin
 
 If you don't use Magisk but have root you could run the following manually:
 
-```
+```sh
 settings put global adb_enabled 1
 settings put global debug_app com.android.chrome
 
