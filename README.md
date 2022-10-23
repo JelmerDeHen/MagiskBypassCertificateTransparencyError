@@ -1,5 +1,5 @@
 # Magisk Bypass Certificate Transparency
-This module bypasses the Certificate Transparency (CT) certificate error for Android `user` build type roms in Chrome (com.android.chrome) by configuring it to use the `--ignore-certificate-errors-spki-list` flag. Chrome version v99 introduced Certificate Transparency (CT) resulting in `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` certificate errors when mitming using custom CA from system bundle. This is problematic when using an intercepting proxy issuing self-signed certificates.
+This module bypasses the Certificate Transparency (CT) certificate error for Android `user` build type roms in Chrome (com.android.chrome) by configuring it to use the `--ignore-certificate-errors-spki-list` flag to the SPKI fingerprints of your user CA certs. Chrome version v99 introduced Certificate Transparency (CT) resulting in `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` certificate errors when mitming using custom CA from system bundle. This is problematic when using an intercepting proxy issuing self-signed certificates.
 
 Certificate Transparency can be disabled in Chrome using the following chrome flag.
 

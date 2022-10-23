@@ -5,12 +5,19 @@ MODDIR=${0%/*}
 if [ "${ANDROID_SOCKET_adbd}x" != "x" ]; then
   MODDIR="$(pwd)"
   alias abort=echo
+  ARCH=arm64
 fi
+
+ABI="$(getprop ro.product.cpu.abi)"
+if [ "${ABI#arm}" != "${ABI}" ]; then
+  openssl="${MODDIR}/openssl-arm64"
+else
+  openssl="${MODDIR}/openssl-x64"
+fi
+chmod +x "${openssl}"
 
 # Consumes cert in DER format and prints SPKI fingerprint
 der2spki () {
-  openssl="${MODDIR}/openssl"
-  chmod +x "${openssl}"
   $openssl x509 -inform der | \
     $openssl x509 -pubkey -noout | \
     $openssl pkey -pubin -outform der | \
