@@ -25,7 +25,7 @@ Chrome will use this method when the `chrome://flags` option `Enable command lin
 # Installation
 1. Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `Enabled`
 2. Install [Magisk](https://github.com/topjohnwu/Magisk/releases)
-3. Zip files `zip -r MagiskBypassCertificateTransparencyError.zip ./*`
+2. Download latest zip [release](https://github.com/JelmerDeHen/MagiskBypassCertificateTransparencyError/releases/)
 4. Upload to device `adb push MagiskBypassCertificateTransparencyError.zip /storage/emulated/0/Download/`
 5. Install in Magisk
 6. Restart your device.
