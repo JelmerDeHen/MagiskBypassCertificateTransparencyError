@@ -4,13 +4,13 @@ compile() {
   local TARGET="${1}"
 
   # Without -D__ANDROID__=33 it targets latest version
-  if ! ./Configure "${1}" no-asm no-hw no-engine no-threads no-tests -static; then
+  if ! ./Configure "${TARGET}" no-asm no-hw no-engine no-threads no-tests -static; then
     printf >&2 './Configure failed for %s\n' "${TARGET}"
     return 1
   fi
 
   if ! make -j"$(nproc)"; then
-    printf >&2 'Failed to build %s\n' "${1}"
+    printf >&2 'Failed to build %s\n' "${TARGET}"
     return 2
   fi
 }

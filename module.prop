@@ -1,6 +1,6 @@
 id=bypasscertificatetransparencyerror
 name=Bypass Certificate Transparency (CT) error
-version=0.0.2
-versionCode=2
+version=0.0.1
+versionCode=1
 author=Jelmer de Hen
 description=This module configures the chrome flag --ignore-certificate-errors-spki-list, this bypasses the NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED cert error produced by Certificate Transparency (CT) introduced in Chrome v99

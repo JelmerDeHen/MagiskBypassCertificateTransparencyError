@@ -1,9 +1,9 @@
-FROM archlinux AS base
+FROM archlinux
 
 ARG OPENSSL_VERSION=1.1.1q
 
 ENV ANDROID_NDK_HOME /ndk
-ENV PATH ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+ENV PATH "/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}"
 
 RUN pacman -Sy --noconfirm archlinux-keyring && pacman -Syu --noconfirm \
   base \

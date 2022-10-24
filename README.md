@@ -70,9 +70,6 @@ killall com.android.chrome
 
 ### Changelog
 
-#### v0.2
-* Discovered that the value of Chrome flag `--ignore-certificate-errors-spki-list` does not matter and deleted SPKI fingerprint creation logic
-
 #### v0.1
 * Initial release
 
