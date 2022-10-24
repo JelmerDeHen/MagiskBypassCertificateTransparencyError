@@ -21,7 +21,7 @@ function arch() {
   fi
 }
 
-openssl="${MODDIR}/openssl-$(arch)"
+openssl="${MODDIR}/bin/openssl-$(arch)"
 chmod +x "${openssl}"
 
 # Consumes cert in DER format and prints SPKI fingerprint
