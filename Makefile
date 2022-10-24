@@ -1,8 +1,8 @@
-
+zip=MagiskBypassCertificateTransparencyError.zip
 
 build:
-				rm MagiskBypassCertificateTransparencyError.zip
-				zip -r MagiskBypassCertificateTransparencyError.zip ./*
+				rm $(zip)
+				zip -r $(zip) META-INF module.prop openssl-arm openssl-arm64 openssl-x64 openssl-x86 post-fs-data.sh
 
 install:
-				adb push MagiskBypassCertificateTransparencyError.zip /storage/emulated/0/Download
+				adb push $(zip) /storage/emulated/0/Download

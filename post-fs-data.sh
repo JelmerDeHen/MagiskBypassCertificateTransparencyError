@@ -2,18 +2,26 @@
 MODDIR=${0%/*}
 
 # Testing: ASH_STANDALONE=1 /data/adb/magisk/busybox sh post-fs-data.sh
-if [ "${ANDROID_SOCKET_adbd}x" != "x" ]; then
+if [ "${ANDROID_SOCKET_adbd}" != "" ]; then
   MODDIR="$(pwd)"
   alias abort=echo
   ARCH=arm64
 fi
 
-ABI="$(getprop ro.product.cpu.abi)"
-if [ "${ABI#arm}" != "${ABI}" ]; then
-  openssl="${MODDIR}/openssl-arm64"
-else
-  openssl="${MODDIR}/openssl-x64"
-fi
+function arch() {
+  ABI="$(getprop ro.product.cpu.abi)"
+  if [ "${ABI}" = "x86" ]; then
+      printf '%s' "x86"
+  elif [ "${ABI}" = "x86_64" ]; then
+      printf '%s' "x64"
+  elif [[ "${ABI}" = "arm64*" ]]; then
+      printf '%s' "arm64"
+  else
+      printf '%s' "arm"
+  fi
+}
+
+openssl="${MODDIR}/openssl-$(arch)"
 chmod +x "${openssl}"
 
 # Consumes cert in DER format and prints SPKI fingerprint
@@ -41,7 +49,7 @@ createFlagFile() {
   SPKI="$(getUserCertSPKIs)"
   SPKI="${SPKI%,}"
 
-  if [ "${SPKI}x" = "x" ]; then
+  if [ "${SPKI}" = "" ]; then
     return 1
   fi
   
@@ -73,9 +81,11 @@ fixUserDebug() {
   settings put global debug_app com.android.chrome
 }
 
-{
+main() {
   createFlagFile || abort "Could not create flag file, did you install any user certificates?"
   copyFlagFileToData
   fixUserDebug
   # killall com.android.chrome
 }
+
+main

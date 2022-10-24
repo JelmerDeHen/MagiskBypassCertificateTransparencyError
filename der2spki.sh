@@ -1,8 +1,8 @@
 #!/bin/bash
+
 # Consumes cert in DER format and prints SPKI
 function der2spki () {
-  cat | \
-    openssl x509 -inform der | \
+  openssl x509 -inform der | \
     openssl x509 -pubkey -noout | \
     openssl pkey -pubin -outform der | \
     openssl dgst -sha256 -binary | \
