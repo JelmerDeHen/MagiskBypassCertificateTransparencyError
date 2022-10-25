@@ -1,13 +1,7 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
 
-# Testing: ASH_STANDALONE=1 /data/adb/magisk/busybox sh post-fs-data.sh
-if [ "${ANDROID_SOCKET_adbd}" != "" ]; then
-  MODDIR="$(pwd)"
-  alias abort=echo
-  ARCH=arm64
-fi
-
+# Determine architecture with ro.product.cpu.abi
 function arch() {
   ABI="$(getprop ro.product.cpu.abi)"
   if [ "${ABI}" = "x86" ]; then
@@ -21,6 +15,7 @@ function arch() {
   fi
 }
 
+# Figure out which binary to use
 openssl="${MODDIR}/bin/openssl-$(arch)"
 chmod +x "${openssl}"
 
@@ -37,7 +32,7 @@ der2spki () {
 getUserCertSPKIs() {
   find /data/misc/user/0/cacerts-added -type f | while read -r; do
     FINGERPRINT="$(der2spki < "${REPLY}")"
-    if [ "${FINGERPRINT}x" = "x" ]; then
+    if [ "${FINGERPRINT}" = "" ]; then
       continue
     fi
     printf '%s,' "$(der2spki < "${REPLY}")"
@@ -57,10 +52,8 @@ createFlagFile() {
 }
 
 # Duplicates the created flag file to /data
-# Seems like only /data/local/tmp/chrome-command-line is used
 copyFlagFileToData() {
   while read -r; do
-    #rm -vf "${REPLY}"
     cp -v "${MODDIR}/chrome-command-line" "${REPLY}"
     chmod -v 555 "${REPLY}"
   done <<EOF
@@ -75,7 +68,7 @@ copyFlagFileToData() {
 EOF
 }
 
-# Causes shouldUseDebugCommandLine() to return true in Chrome while using user build type rom
+# Causes shouldUseDebugCommandLine() to return true in Chrome when running `user` build
 fixUserDebug() {
   settings put global adb_enabled 1
   settings put global debug_app com.android.chrome
@@ -85,7 +78,6 @@ main() {
   createFlagFile || abort "Could not create flag file, did you install any user certificates?"
   copyFlagFileToData
   fixUserDebug
-  # killall com.android.chrome
 }
 
 main
