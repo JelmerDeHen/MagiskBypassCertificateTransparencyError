@@ -1,3 +1,28 @@
+# Technical info
+This module does the following:
+- The module bundles statically compiled openssl binaries for x86/x64/arm/arm64 to generate SPKI fingerprints for the user installed CA certificates on the device
+- Create flag files picked up by Chrome containing `--ignore-certificate-errors-spki-list` flag configured to the SPKI fingerprints for the user installed CAs
+- Configure global settings debug value to `com.android.chrome`
+
+This allows us to bypass the Certificate Transparency (CT) error `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` for self-signed certificates.
+
+The flags used when Android starts Chrome can be manipulated using the following files.
+
+```
+/data/local/chrome-command-line
+/data/local/android-webview-command-line
+/data/local/webview-command-line
+/data/local/content-shell-command-line
+/data/local/tmp/chrome-command-line
+/data/local/tmp/android-webview-command-line
+/data/local/tmp/webview-command-line
+/data/local/tmp/content-shell-command-line
+```
+
+Chrome will use these files when the `chrome://flags` option `Enable command line on non-rooted devices` is `Enabled`.
+
+This works on `eng` and `userdebug` builds out of the box. On `user` builds you need to configure the global system-level device preference `debug_app` to `com.android.chrome` to make it load the flag files. If you are experiencing `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` on an app other than `com.android.chrome`, configuring the `debug_app` to that app is the solution (`adb shell su -c settings put global debug_app <appname>`).
+
 # Installation
 ## Option 1: Install Magisk module
 1. Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `Enabled`
@@ -103,36 +128,6 @@ adb shell su -c killall com.android.chrome
 adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main
 ```
 
-# Technical info
-This module does the following:
-- The module bundles statically compiled openssl binaries for x86/x64/arm/arm64 to generate SPKI fingerprints for the user installed CA certificates on the device
-- Create flag files picked up by Chrome containing `--ignore-certificate-errors-spki-list` flag configured to the SPKI fingerprints for the user installed CAs
-- Configure global settings debug value to `com.android.chrome`
-
-This allows us to bypass the Certificate Transparency (CT) error `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` for self-signed certificates.
-
-The flags used when Android starts Chrome can be manipulated using the following files.
-
-```
-/data/local/chrome-command-line
-/data/local/android-webview-command-line
-/data/local/webview-command-line
-/data/local/content-shell-command-line
-/data/local/tmp/chrome-command-line
-/data/local/tmp/android-webview-command-line
-/data/local/tmp/webview-command-line
-/data/local/tmp/content-shell-command-line
-```
-
-Chrome will use these files when the `chrome://flags` option `Enable command line on non-rooted devices` is `Enabled`.
-
-This works on `eng` and `userdebug` builds out of the box. On `user` builds you need to configure the global system-level device preference `debug_app` to `com.android.chrome` to make it load the flag files. If you are experiencing `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` on an app other than `com.android.chrome`, configuring the `debug_app` to that app is the solution (`adb shell su -c settings put global debug_app <appname>`).
-
-### Changelog
-
-#### v0.1
-* Initial release
-
 # Related Chrome sources
 
 Chrome checks if it should use the flag files in `shouldUseDebugCommandLine()`.
@@ -187,6 +182,11 @@ Chrome checks if it should use the flag files in `shouldUseDebugCommandLine()`.
         return ChromeFeatureList.sCommandLineOnNonRooted.isEnabled();
     }
 ```
+
+# Changelog
+
+## v0.1
+* Initial release
 
 # Links
 - https://chromium.googlesource.com/chromium/src/+/master/net/docs/certificate-transparency.md
