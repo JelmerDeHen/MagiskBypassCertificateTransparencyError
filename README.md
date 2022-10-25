@@ -1,11 +1,115 @@
-# Magisk Bypass Certificate Transparency
-This module bypasses the Certificate Transparency (CT) certificate error for Android `user` build type roms in Chrome (com.android.chrome) by configuring it to use the `--ignore-certificate-errors-spki-list` flag to the SPKI fingerprints of your user CA certs. Chrome version v99 introduced Certificate Transparency (CT) resulting in `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` certificate errors when mitming using custom CA from system bundle. This is problematic when using an intercepting proxy issuing self-signed certificates.
+# Installation
+## Option 1: Install Magisk module
+1. Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `Enabled`
+2. Install user CA cert ([instructions](https://portswigger.net/support/installing-burp-suites-ca-certificate-in-an-android-device))
+3. Install [Magisk](https://topjohnwu.github.io/Magisk/install.html)
+4. Download Magisk module from [releases](https://github.com/JelmerDeHen/MagiskBypassCertificateTransparencyError/releases/)
+5. Install Magisk module in Magisk
 
-Certificate Transparency can be disabled in Chrome using the following chrome flag.
+Visit [chrome://version](chrome://version) and verify that the `--ignore-certificate-errors-spki-list` flag is picked up by Chrome.
+
+## Option 2: Create and install Magisk module
+
+Use the following steps to compile the Magisk module manually.
 
 ```sh
-chrome --ignore-certificate-errors-spki-list=<SPKI_FINGERPRINT>
+git clone https://github.com/JelmerDeHen/MagiskBypassCertificateTransparencyError
+cd MagiskBypassCertificateTransparencyError
+
+# Compile statically compiled openssl binaries
+bash build-openssl-static/wrapper.sh build
+
+# Overwrite the precompiled binaries with your compiled binaries now located in `build-openssl-static/out`
+mv -v build-openssl-static/out/* bin
+
+# Create Magisk module
+zip -r MagiskBypassCertificateTransparencyError.zip bin META-INF module.prop openssl-arm openssl-arm64 openssl-x64 openssl-x86 post-fs-data.sh update_info.json
+
+# Upload module to device
+adb push MagiskBypassCertificateTransparencyError.zip /sdcard/Download
 ```
+
+Now install the module in the Magisk app.
+
+## Option 3: Without Magisk
+
+When you don't use Magisk but have root you can follow these steps to manually change the Chrome flags.
+
+### Step 1: Generate SPKI fingerprints
+
+Use the CA certificate in DER format you are using to issue self-signed certificates. The `der2spki.sh` script can be used to generate SPKI fingerprints.
+
+```sh
+# Generate SPKI fingerprint
+bash der2spki.sh cacert.der
+```
+
+This script can also directly connect to your device over adb and generate SPKI fingerprints for the user installed certificates located at `/data/misc/user/0/cacerts-added/` on the device.
+
+To do this run:
+
+```sh
+bash der2spki.sh adb
+```
+
+### Step 2: Create command line flag files
+
+Android applications don't have command line arguments. Instead they're simulated by reading a file at a specific location early during startup. Applications each defined their own files. The Chrome application (`com.android.chrome`) provides functionality to change the parameters via a series of files under `/data/local/` and `/data/local/tmp`.
+
+
+Create the files used by Chrome:
+
+```sh
+# Replace with your generated SPKI in step 1
+FLAGS='chrome --ignore-certificate-errors-spki-list=<SPKI>'
+# Create the flag files
+echo "${FLAGS}" | adb shell su -c tee /data/local/chrome-command-line /data/local/android-webview-command-line /data/local/webview-command-line /data/local/content-shell-command-line /data/local/tmp/chrome-command-line /data/local/tmp/android-webview-command-line /data/local/tmp/webview-command-line /data/local/tmp/content-shell-command-line
+# Set permissions on flag files
+echo 'chmod 555 /data/local/*-command-line /data/local/tmp/*-command-line' | adb shell su
+```
+
+If you are on a `eng` or `userdebug` build continue with step 5.
+
+### Step 3: Configure Chrome to use command line flags
+
+Chrome picks up the command line parameters when:
+- Current build is `eng` or `userdebug`
+- Adb is enabled and this is the debug app
+
+Check the Android build variant.
+
+```sh
+adb shell getprop ro.build.type
+```
+
+When the `ro.build.type` is `user` then enable adb and configure the debug app to `com.android.chrome`, on `eng` and `userdebug` builds this can be skipped.
+
+```sh
+adb shell settings put global adb_enabled 1
+# This requires root
+adb shell su -c settings put global debug_app com.android.chrome
+```
+
+### Step 4: Enable command line on non-rooted devices
+
+Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `Enabled`
+
+### Step 5: Restart Chrome
+
+Restart Chrome and visit `chrome://version` to check debug flags.
+
+```sh
+adb shell su -c killall com.android.chrome
+adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main
+```
+
+# Technical info
+This module does the following:
+- The module bundles statically compiled openssl binaries for x86/x64/arm/arm64 to generate SPKI fingerprints for the user installed CA certificates on the device
+- Create flag files picked up by Chrome containing `--ignore-certificate-errors-spki-list` flag configured to the SPKI fingerprints for the user installed CAs
+- Configure global settings debug value to `com.android.chrome`
+
+This allows us to bypass the Certificate Transparency (CT) error `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` for self-signed certificates.
 
 The flags used when Android starts Chrome can be manipulated using the following files.
 
@@ -20,72 +124,37 @@ The flags used when Android starts Chrome can be manipulated using the following
 /data/local/tmp/content-shell-command-line
 ```
 
-Chrome will use this method when the `chrome://flags` option `Enable command line on non-rooted devices` is `Enabled`. This works on `eng` and `userdebug` buildtype images out of the box, but not on `user` buildtype images. It was found that by configuring the global system-level device preference `debug_app` to `com.android.chrome` Chrome will happily use the flags and as-such and it is possible to change the Chrome parameters.
+Chrome will use these files when the `chrome://flags` option `Enable command line on non-rooted devices` is `Enabled`.
 
-# Installation
-1. Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `Enabled`
-2. Install [Magisk](https://github.com/topjohnwu/Magisk/releases)
-2. Download latest zip [release](https://github.com/JelmerDeHen/MagiskBypassCertificateTransparencyError/releases/)
-4. Upload to device `adb push MagiskBypassCertificateTransparencyError.zip /storage/emulated/0/Download/`
-5. Install in Magisk
-6. Restart your device.
-7. Visit `chrome://version` and verify `--ignore-certificate-errors-spki-list` flag is present
-
-# Manually
-If you don't use Magisk but have root you can do this manually. Generate a SPKI fingerprint using `der2spki.sh` locally.
-
-```sh
-# Generate SPKI fingerprint
-bash der2spki.sh cacert.der
-# This script can also connect over adb to your device and generate SPKI fingerprint based on user installed ca certs
-bash der2spki.sh adb
-```
-
-Once you have the SPKI fingerprint connect over adb and run the following as root:
-
-```sh
-settings put global adb_enabled 1
-settings put global debug_app com.android.chrome
-
-# Change SPKI_FINGERPRINT with generated fingerprint
-printf 'chrome --ignore-certificate-errors-spki-list=<SPKI_FINGERPRINT>' > /data/local/tmp/chrome-command-line
-
-while read -r; do
-  cp /data/local/tmp/chrome-command-line "${REPLY}"
-  chmod 555 "${REPLY}"
-done <<EOF
-/data/local/chrome-command-line
-/data/local/android-webview-command-line
-/data/local/webview-command-line
-/data/local/content-shell-command-line
-/data/local/tmp/chrome-command-line
-/data/local/tmp/android-webview-command-line
-/data/local/tmp/webview-command-line
-/data/local/tmp/content-shell-command-line
-EOF
-
-# Restart Chrome for changes to take effect
-killall com.android.chrome
-```
+This works on `eng` and `userdebug` builds out of the box. On `user` builds you need to configure the global system-level device preference `debug_app` to `com.android.chrome` to make it load the flag files. If you are experiencing `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` on an app other than `com.android.chrome`, configuring the `debug_app` to that app is the solution (`settings put global debug_app <appname>`).
 
 ### Changelog
 
 #### v0.1
 * Initial release
 
-# Technical info
+# Related Chrome sources
 
-Chrome performs an extra check in the function `shouldUseDebugCommandLine()`.
+Chrome checks if it should use the flag files in `shouldUseDebugCommandLine()`.
 
-https://source.chromium.org/chromium/chromium/src/+/main:base/android/java/src/org/chromium/base/CommandLineInitUtil.java
+[https://chromium.googlesource.com/chromium/src/+/HEAD/base/android/java/src/org/chromium/base/CommandLineInitUtil.java#53](https://chromium.googlesource.com/chromium/src/+/HEAD/base/android/java/src/org/chromium/base/CommandLineInitUtil.java#53)
 ```java
-    /**
-     * Use an alternative path if:
-     * - The current build is "eng" or "userdebug", OR
-     * - adb is enabled and this is the debug app, OR
-     * - Force enabled by the embedder.
-     * @param shouldUseDebugFlags If non-null, returns whether debug flags are allowed to be used.
-     */
+    public static void initCommandLine(String fileName) {
+        initCommandLine(fileName, null);
+    }
+
+    public static void initCommandLine(
+            String fileName, @Nullable Supplier<Boolean> shouldUseDebugFlags) {
+        assert !CommandLine.isInitialized();
+        File commandLineFile = new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, fileName);
+        // shouldUseDebugCommandLine() uses IPC, so don't bother calling it if no flags file exists.
+        boolean debugFlagsExist = commandLineFile.exists();
+        if (!debugFlagsExist || !shouldUseDebugCommandLine(shouldUseDebugFlags)) {
+            commandLineFile = new File(COMMAND_LINE_FILE_PATH, fileName);
+        }
+        CommandLine.initFromFile(commandLineFile.getPath());
+    }
+
     private static boolean shouldUseDebugCommandLine(
             @Nullable Supplier<Boolean> shouldUseDebugFlags) {
         if (shouldUseDebugFlags != null && shouldUseDebugFlags.get()) return true;
@@ -105,32 +174,21 @@ https://source.chromium.org/chromium/chromium/src/+/main:base/android/java/src/o
     }
 ```
 
-https://source.chromium.org/chromium/chromium/src/+/main:chrome/android/java/src/org/chromium/chrome/browser/base/SplitCompatApplication.java;l=322
+[https://chromium.googlesource.com/chromium/src/+/HEAD/base/android/java/src/org/chromium/base/BuildInfo.java#249](https://chromium.googlesource.com/chromium/src/+/HEAD/base/android/java/src/org/chromium/base/BuildInfo.java#249)
+```java
+    public static boolean isDebugAndroid() {
+        return "eng".equals(Build.TYPE) || "userdebug".equals(Build.TYPE);
+    }
+```
+
+[https://source.chromium.org/chromium/chromium/src/+/main:chrome/android/java/src/org/chromium/chrome/browser/base/SplitCompatApplication.java](https://source.chromium.org/chromium/chromium/src/+/main:chrome/android/java/src/org/chromium/chrome/browser/base/SplitCompatApplication.java;l=322)
 ```java
     private static Boolean shouldUseDebugFlags() {
         return ChromeFeatureList.sCommandLineOnNonRooted.isEnabled();
     }
 ```
 
-https://chromium.googlesource.com/chromium/src/+/HEAD/base/android/java/src/org/chromium/base/BuildInfo.java#249
-```java
-    /**
-     * Check if this is a debuggable build of Android. Use this to enable developer-only features.
-     * This is a rough approximation of the hidden API {@code Build.IS_DEBUGGABLE}.
-     */
-    public static boolean isDebugAndroid() {
-        return "eng".equals(Build.TYPE) || "userdebug".equals(Build.TYPE);
-    }
-```
-
-The first check `ChromeFeatureList.sCommandLineOnNonRooted.isEnabled()` verifies if the flag was configured in `chrome://flags`.
-
-To make the function `shouldUseDebugCommandLine()` return true one of the following prerequisites must be true:
-- `ro.build.type` is `eng` or `userdebug`
-- System property `adb_enabled=1` and `debug_app=com.android.chrome`: Can be changed as root `settings put global debug_app com.android.chrome`
-
-
 # Links
 - https://chromium.googlesource.com/chromium/src/+/master/net/docs/certificate-transparency.md
 - https://httptoolkit.tech/blog/chrome-android-certificate-transparency
-
+- https://certificate.transparency.dev/

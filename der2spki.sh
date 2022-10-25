@@ -11,9 +11,11 @@ function der2spki () {
 
 # Get SPKIs from installed user certificates
 function derFromAdb2spki () {
-  while read -r; do
-    adb shell su -c cat "${REPLY}" | der2spki
-  done < <(adb shell su -c find /data/misc/user/0/cacerts-added/ -type f)
+  local CMD='find /data/misc/user/0/cacerts-added/ -type f -exec base64 -w0 {} \; -exec echo \;'
+  adb shell su <<<"${CMD}" | while read -r; do
+    base64 -d <<<"${REPLY}" | der2spki
+  done | tr '\n' ',' | sed 's/,$//g'
+  echo
 }
 
 function main() {

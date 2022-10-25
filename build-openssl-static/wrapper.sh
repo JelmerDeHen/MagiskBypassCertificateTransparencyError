@@ -4,14 +4,14 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Build & print image ID
 function buildAndGetDockerId() {
   # Cache the build
-  if ! docker 1>&2 build .; then
+  if ! docker 1>&2 build "${DIR}"; then
     printf >&2 'Build failed\n'
     return 2
   fi
 
   # Get the ID
   local ID
-  if ! ID="$(docker build -q .)"; then
+  if ! ID="$(docker build -q "${DIR}")"; then
     printf >&2 'Build fail\n'
     return 3
   fi
