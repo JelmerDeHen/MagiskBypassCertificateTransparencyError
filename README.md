@@ -126,7 +126,7 @@ The flags used when Android starts Chrome can be manipulated using the following
 
 Chrome will use these files when the `chrome://flags` option `Enable command line on non-rooted devices` is `Enabled`.
 
-This works on `eng` and `userdebug` builds out of the box. On `user` builds you need to configure the global system-level device preference `debug_app` to `com.android.chrome` to make it load the flag files. If you are experiencing `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` on an app other than `com.android.chrome`, configuring the `debug_app` to that app is the solution (`settings put global debug_app <appname>`).
+This works on `eng` and `userdebug` builds out of the box. On `user` builds you need to configure the global system-level device preference `debug_app` to `com.android.chrome` to make it load the flag files. If you are experiencing `NET::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED` on an app other than `com.android.chrome`, configuring the `debug_app` to that app is the solution (`adb shell su -c settings put global debug_app <appname>`).
 
 ### Changelog
 
