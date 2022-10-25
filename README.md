@@ -4,7 +4,7 @@
 2. Install user CA cert ([instructions](https://portswigger.net/support/installing-burp-suites-ca-certificate-in-an-android-device))
 3. Install [Magisk](https://topjohnwu.github.io/Magisk/install.html)
 4. Download Magisk [module](https://github.com/JelmerDeHen/MagiskBypassCertificateTransparencyError/releases/download/v0.0.1/MagiskBypassCertificateTransparencyError.zip)
-5. Install Magisk module in Magisk
+5. Install Magisk module in Magisk app
 
 Visit [chrome://version](chrome://version) and verify that the `--ignore-certificate-errors-spki-list` flag is picked up by Chrome.
 
