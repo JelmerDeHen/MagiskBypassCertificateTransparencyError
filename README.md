@@ -124,7 +124,7 @@ Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `E
 Restart Chrome and visit `chrome://version` to check debug flags.
 
 ```sh
-adb shell su -c killall com.android.chrome
+adb shell am force-stop com.android.chrome
 adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main
 ```
 
