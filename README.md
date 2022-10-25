@@ -1,4 +1,4 @@
-# Technical info
+# MagiskBypassCertificateTransparencyError
 This module does the following:
 - The module bundles statically compiled openssl binaries for x86/x64/arm/arm64 to generate SPKI fingerprints for the user installed CA certificates on the device
 - Create flag files picked up by Chrome containing `--ignore-certificate-errors-spki-list` flag configured to the SPKI fingerprints for the user installed CAs
