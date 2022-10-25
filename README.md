@@ -3,7 +3,7 @@
 1. Visit `chrome://flags` and set `Enable command line on non-rooted devices` to `Enabled`
 2. Install user CA cert ([instructions](https://portswigger.net/support/installing-burp-suites-ca-certificate-in-an-android-device))
 3. Install [Magisk](https://topjohnwu.github.io/Magisk/install.html)
-4. Download Magisk module from [releases](https://github.com/JelmerDeHen/MagiskBypassCertificateTransparencyError/releases/)
+4. Download Magisk [module](https://github.com/JelmerDeHen/MagiskBypassCertificateTransparencyError/releases/download/v0.0.1/MagiskBypassCertificateTransparencyError.zip)
 5. Install Magisk module in Magisk
 
 Visit [chrome://version](chrome://version) and verify that the `--ignore-certificate-errors-spki-list` flag is picked up by Chrome.
@@ -68,7 +68,7 @@ echo "${FLAGS}" | adb shell su -c tee /data/local/chrome-command-line /data/loca
 echo 'chmod 555 /data/local/*-command-line /data/local/tmp/*-command-line' | adb shell su
 ```
 
-If you are on a `eng` or `userdebug` build continue with step 5.
+If you are on a `eng` or `userdebug` build continue with step 4.
 
 ### Step 3: Configure Chrome to use command line flags
 
